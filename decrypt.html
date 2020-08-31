@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
+<head>
+<title>Cross-Browser QRCode generator for Javascript</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="qrcode.js"></script>
+<script type="text/javascript" src="horcrux.js"></script>
+<script src="html5-qrcode.min.js"></script>
+</head>
+<body>
+<div style="width: 500px" id="reader1"></div>
+<input id="ciphertext1" type="text" value="" style="width:80%" /><br />
+<div style="width: 500px" id="reader2"></div>
+<input id="ciphertext2" type="text" value="" style="width:80%" /><br />
+
+Plaintext:
+<input id="plaintext" type="text" value="" style="width:80%" /><br />
+
+<script type="text/javascript">
+function makeCode () {
+	var c1 = document.getElementById("ciphertext1");
+	var c2 = document.getElementById("ciphertext2");
+	
+	if (!c1.value) {
+		return;
+	}
+
+	if (!c2.value) {
+		return;
+	}
+
+  var plaintext = decrypt(c1.value, c2.value);
+  document.getElementById("plaintext").value = plaintext;
+}
+
+var scanner1 = new Html5QrcodeScanner(
+    "reader1", { fps: 10, qrbox: 250 });
+
+var scanner2 = new Html5QrcodeScanner(
+    "reader2", { fps: 10, qrbox: 250 });
+        
+
+function onScanFailure(error) {
+  console.error("Error!");
+	// handle scan failure, usually better to ignore and keep scanning
+	console.error(`QR error = ${error}`);
+}
+        
+function onScanSuccess(ciphertext1) {
+	var c1 = document.getElementById("ciphertext1");
+  c1.value = ciphertext1;
+
+	// handle on success condition with the decoded message
+	scanner1.clear();
+	// ^ this will stop the scanner (video feed) and clear the scan area.
+	scanner2.render(function(ciphertext2) {
+		var c2 = document.getElementById("ciphertext2");
+		c2.value = ciphertext2;
+
+    makeCode();
+
+		scanner2.clear();
+	}, onScanFailure);
+}
+
+scanner1.render(onScanSuccess, onScanFailure);
+
+
+makeCode();
+
+$("#ciphertext1,#ciphertext2").
+	on("blur", function () {
+		makeCode();
+	}).
+	on("keydown", function (e) {
+    makeCode();
+	});
+</script>
+</body>
