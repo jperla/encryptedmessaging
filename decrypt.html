@@ -49,19 +49,19 @@ function onScanFailure(error) {
 }
         
 function onScanSuccess(ciphertext1) {
+	// handle on success condition with the decoded message
 	var c1 = document.getElementById("ciphertext1");
   c1.value = ciphertext1;
 
-	// handle on success condition with the decoded message
-	scanner1.clear();
-	// ^ this will stop the scanner (video feed) and clear the scan area.
+	scanner1.clear(); // this will stop the scanner (video feed) and clear the scan area.
+
 	scanner2.render(function(ciphertext2) {
 		var c2 = document.getElementById("ciphertext2");
 		c2.value = ciphertext2;
 
-    makeCode();
+		scanner2.clear(); // this will stop the scanner (video feed) and clear the scan area.
 
-		scanner2.clear();
+    makeCode();
 	}, onScanFailure);
 }
 
