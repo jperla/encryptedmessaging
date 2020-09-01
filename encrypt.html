@@ -10,7 +10,7 @@
 <script type="text/javascript" src="horcrux.js"></script>
 </head>
 <body>
-<input id="text" type="text" value="hello" style="width:80%" /><br />
+<input id="text" type="text" value="Hello Holmes! It works!" style="width:80%" /><br />
 <div id="qrcode1" style="width:100px; height:100px; margin-top:15px;"></div>
 <input id="ciphertext1" type="text" value="" style="width:80%" /><br />
 <div id="qrcode2" style="width:100px; height:100px; margin-top:15px;"></div>
@@ -43,10 +43,12 @@ nacl_factory.instantiate(function (nacl) {
 
     var ciphertext = XOR(otp, encoded_plaintext);
 
-    document.getElementById("ciphertext1").value = nacl.to_hex(otp);
-    qrcode1.makeCode(nacl.to_hex(otp));
-    document.getElementById("ciphertext2").value = nacl.to_hex(ciphertext);
-    qrcode2.makeCode(nacl.to_hex(ciphertext));
+    var qr1 = stringify(nacl, otp);
+    var qr2 = stringify(nacl, ciphertext);
+    document.getElementById("ciphertext1").value = qr1;
+    qrcode1.makeCode(qr1);
+    document.getElementById("ciphertext2").value = qr2;
+    qrcode2.makeCode(qr2);
   }
 
   makeCode();

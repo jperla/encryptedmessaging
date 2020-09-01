@@ -17,6 +17,7 @@
 <input id="ciphertext2" type="text" value="" style="width:80%" /><br />
 
 Plaintext:
+<br />
 <input id="plaintext" type="text" value="" style="width:80%" /><br />
 
 <script type="text/javascript">
@@ -33,7 +34,9 @@ nacl_factory.instantiate(function (nacl) {
       return;
     }
 
-    var plaintext = nacl.decode_utf8(XOR(nacl.from_hex(c1.value), nacl.from_hex(c2.value)));
+    var b1 = destringify(nacl, c1.value);
+    var b2 = destringify(nacl, c2.value);
+    var plaintext = nacl.decode_utf8(XOR(b1, b2));
     document.getElementById("plaintext").value = plaintext;
   }
 
