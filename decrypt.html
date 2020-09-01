@@ -6,76 +6,78 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
 <script type="text/javascript" src="jquery.min.js"></script>
 <script type="text/javascript" src="qrcode.js"></script>
+<script type="text/javascript" src="nacl_factory.js"></script>
 <script type="text/javascript" src="horcrux.js"></script>
 <script src="html5-qrcode.min.js"></script>
 </head>
 <body>
-<div style="width: 500px" id="reader1"></div>
+<div style="width: 80%;" id="reader1"></div>
 <input id="ciphertext1" type="text" value="" style="width:80%" /><br />
-<div style="width: 500px" id="reader2"></div>
+<div style="width: 80%;" id="reader2"></div>
 <input id="ciphertext2" type="text" value="" style="width:80%" /><br />
 
 Plaintext:
 <input id="plaintext" type="text" value="" style="width:80%" /><br />
 
 <script type="text/javascript">
-function makeCode () {
-	var c1 = document.getElementById("ciphertext1");
-	var c2 = document.getElementById("ciphertext2");
-	
-	if (!c1.value) {
-		return;
-	}
+nacl_factory.instantiate(function (nacl) {
+  function makeCode () {
+    var c1 = document.getElementById("ciphertext1");
+    var c2 = document.getElementById("ciphertext2");
+    
+    if (!c1.value) {
+      return;
+    }
 
-	if (!c2.value) {
-		return;
-	}
+    if (!c2.value) {
+      return;
+    }
 
-  var plaintext = decrypt(c1.value, c2.value);
-  document.getElementById("plaintext").value = plaintext;
-}
+    var plaintext = nacl.decode_utf8(XOR(nacl.from_hex(c1.value), nacl.from_hex(c2.value)));
+    document.getElementById("plaintext").value = plaintext;
+  }
 
-var scanner1 = new Html5QrcodeScanner(
-    "reader1", { fps: 10, qrbox: 250 });
+  var scanner1 = new Html5QrcodeScanner(
+      "reader1", { fps: 10, qrbox: 250 });
 
-var scanner2 = new Html5QrcodeScanner(
-    "reader2", { fps: 10, qrbox: 250 });
-        
+  var scanner2 = new Html5QrcodeScanner(
+      "reader2", { fps: 10, qrbox: 250 });
+          
 
-function onScanFailure(error) {
-  console.error("Error!");
-	// handle scan failure, usually better to ignore and keep scanning
-	console.error(`QR error = ${error}`);
-}
-        
-function onScanSuccess(ciphertext1) {
-	// handle on success condition with the decoded message
-	var c1 = document.getElementById("ciphertext1");
-  c1.value = ciphertext1;
+  function onScanFailure(error) {
+    console.error("Error!");
+    // handle scan failure, usually better to ignore and keep scanning
+    console.error(`QR error = ${error}`);
+  }
+          
+  function onScanSuccess(ciphertext1) {
+    // handle on success condition with the decoded message
+    var c1 = document.getElementById("ciphertext1");
+    c1.value = ciphertext1;
 
-	scanner1.clear(); // this will stop the scanner (video feed) and clear the scan area.
+    scanner1.clear(); // this will stop the scanner (video feed) and clear the scan area.
 
-	scanner2.render(function(ciphertext2) {
-		var c2 = document.getElementById("ciphertext2");
-		c2.value = ciphertext2;
+    scanner2.render(function(ciphertext2) {
+      var c2 = document.getElementById("ciphertext2");
+      c2.value = ciphertext2;
 
-		scanner2.clear(); // this will stop the scanner (video feed) and clear the scan area.
+      scanner2.clear(); // this will stop the scanner (video feed) and clear the scan area.
 
-    makeCode();
-	}, onScanFailure);
-}
+      makeCode();
+    }, onScanFailure);
+  }
 
-scanner1.render(onScanSuccess, onScanFailure);
+  scanner1.render(onScanSuccess, onScanFailure);
 
+  makeCode();
 
-makeCode();
-
-$("#ciphertext1,#ciphertext2").
-	on("blur", function () {
-		makeCode();
-	}).
-	on("keydown", function (e) {
-    makeCode();
-	});
+  $("#ciphertext1,#ciphertext2").
+    on("blur", function () {
+      makeCode();
+    }).
+    on("keydown", function (e) {
+      makeCode();
+    });
+});
 </script>
 </body>

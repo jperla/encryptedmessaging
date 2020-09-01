@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
 <script type="text/javascript" src="jquery.min.js"></script>
 <script type="text/javascript" src="qrcode.js"></script>
+<script type="text/javascript" src="nacl_factory.js"></script>
 <script type="text/javascript" src="horcrux.js"></script>
 </head>
 <body>
@@ -26,40 +27,39 @@ var qrcode2 = new QRCode(document.getElementById("qrcode2"), {
 	height : 100
 });
 
-function makeCode () {
-	var elText = document.getElementById("text");
-	
-	if (!elText.value) {
-		alert("Input a text");
-		elText.focus();
-		return;
-	}
+nacl_factory.instantiate(function (nacl) {
+  function makeCode () {
+    var elText = document.getElementById("text");
+    
+    if (!elText.value) {
+      elText.focus();
+      return;
+    }
 
-  // Make ciphertexts
-  var plaintext = elText.value;
-  var binary = convertToBinary(plaintext);
-  var otp = getRandomKey(binary.length);
-  var ciphertext = encrypt(binary, otp);
-	
-  // TODO: binary text removes a lot of encoding
-  // TODO: this is encoding an ascii string representation of binary, bad
+    // Make ciphertexts
+    var plaintext = elText.value;
+    var encoded_plaintext = nacl.encode_utf8(plaintext);
+    var otp = nacl.random_bytes(encoded_plaintext.length);
 
-	document.getElementById("ciphertext1").value = otp;
-	qrcode1.makeCode(otp);
-	document.getElementById("ciphertext2").value = ciphertext;
-	qrcode2.makeCode(ciphertext);
-}
+    var ciphertext = XOR(otp, encoded_plaintext);
 
-makeCode();
+    document.getElementById("ciphertext1").value = nacl.to_hex(otp);
+    qrcode1.makeCode(nacl.to_hex(otp));
+    document.getElementById("ciphertext2").value = nacl.to_hex(ciphertext);
+    qrcode2.makeCode(nacl.to_hex(ciphertext));
+  }
 
-$("#text").
-	on("blur", function () {
-		makeCode();
-	}).
-	on("keydown", function (e) {
-    //if (e.keyCode == 13) {
+  makeCode();
+
+  $("#text").
+    on("blur", function () {
       makeCode();
-    //}
-	});
+    }).
+    on("keydown", function (e) {
+      //if (e.keyCode == 13) {
+        makeCode();
+      //}
+    });
+});
 </script>
 </body>
